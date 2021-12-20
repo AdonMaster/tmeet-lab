@@ -58,7 +58,7 @@ class SmsClaroFileHeaderSt
             if (++$cont > 20) return false;
             if (Str::startsWith($line, 'Tel;Seção;Data;Hora')) return false;
 
-            if (trim($line) == 'TRANSMEET LTDA - EPP - 11764828000132') {
+            if (Str::startsWith($line, 'TRANSMEET LT')) {
                 $p_header = true;
             }
 

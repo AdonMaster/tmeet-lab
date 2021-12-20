@@ -12,6 +12,7 @@ use App\Structs\SmsClaroFileSt;
 use App\Utils\FileIterator;
 use App\Utils\Number;
 use Carbon\Carbon;
+use DB;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -55,16 +56,17 @@ class SmsClaroImporterController extends Controller
             }
 
             // aki processo o conteudo, enviando para o banco de dados tb
-            $this->processFilesContent($files);
+            $saved = $this->processFilesContent($files);
 
             // arquivo processado, vamos marcar no banco isso
-            //TODO: $this->repo->arquivosContaAdd($nome_arquivo);
+            //todo: $this->repo->arquivosContaAdd($nome_arquivo);
+
+            //
+            return $this->jsonOk("$saved registros inseridos");
 
         } catch (Exception $e) {
             return $this->jsonError($e->getMessage());
         }
-
-        return $this->jsonOk();
     }
 
     /**
@@ -96,7 +98,9 @@ class SmsClaroImporterController extends Controller
 
     /**
      * @param SmsClaroFileSt[] $files
+     * @return int
      * @throws Exception
+     * @throws \Throwable
      */
     private function processFilesContent(array $files)
     {
@@ -104,45 +108,56 @@ class SmsClaroImporterController extends Controller
         $headerModel = $this->processFilesContentHeader($files[0]);
 
         // salvando sms_operadoras
-        $ccont = 0;
         $l_column_names = [];
+        $saved = 0;
         foreach ($files as $file) {
             $fileIterator = new FileIterator($file->file);
-            $fileIterator->iterate(function($line, $cont) use ($headerModel, $file, &$ccont, &$l_column_names) {
+            DB::transaction(function() use($fileIterator, $headerModel, $file, &$l_column_names, &$saved) {
 
-                if (count($l_column_names)) {
+                $fileIterator->iterate(function($line, $cont) use ($headerModel, $file, &$l_column_names, &$saved) {
 
-                    $row = explode(';', $line);
-                    $l_secao = $row[$l_column_names['Seção']];
+                    if (count($l_column_names) && $line) {
 
-                    if ($l_secao == 'Torpedos') {
+                        $row = explode(';', $line);
+                        $secao = $row[$l_column_names['Seção']];
 
-                        $data_inicio = $headerModel->data_inicio;
-                        $data_fim = $headerModel->data_fim;
-                        $origem = preg_replace("/[^0-9]/", '', $row[$l_column_names['Tel']]);
-                        $destino = preg_replace("/[^0-9]/", '', $row[$l_column_names['Número']]);
-                        $valor_operadora = Number::brToFloat1($row[$l_column_names['Valor Cobrado']]);
-                        $conta = $file->id2;
-                        $data_envio = Carbon::createFromFormat('d/m/Y', $row[$l_column_names['Data']])->startOfDay();
-                        $linha_arquivo = $cont;
-                        $descricao = $row[$l_column_names['Descrição']];
+                        if ($secao == 'Torpedos') {
 
-                        $this->repo->smsOperadorasAdd(
-                            $data_inicio, $data_fim, $origem, $destino, $valor_operadora, $conta,
-                            $data_envio, $linha_arquivo, $descricao
-                        );
+                            try {
+                                $data_inicio = $headerModel->data_inicio;
+                                $data_fim = $headerModel->data_fim;
+                                $origem = preg_replace("/[^0-9]/", '', $row[$l_column_names['Tel']]);
+                                $destino = preg_replace("/[^0-9]/", '', $row[$l_column_names['Número']]);
+                                $valor_operadora = Number::brToFloat1($row[$l_column_names['Valor Cobrado']]);
+                                $conta = $file->id2;
+                                $data_envio = Carbon::createFromFormat('d/m/Y', $row[$l_column_names['Data']])->startOfDay();
+                                $linha_arquivo = $cont;
+                                $descricao = $row[$l_column_names['Descrição']];
 
-                        if (++$ccont > 20) return false;
+                                $this->repo->smsOperadorasAdd(
+                                    $data_inicio, $data_fim, $origem, $destino, $valor_operadora, $conta,
+                                    $data_envio, $linha_arquivo, $descricao
+                                );
+
+                                $saved++;
+                            } catch (Exception $e) {
+                                $msg = $e->getMessage();
+                                $sequence = $file->sequence;
+                                throw new Exception("Erro Sequencia: $sequence@$cont | $msg | $line");
+                            }
+
+                        }
+
+                    } else if (Str::startsWith($line, 'Tel;Seção;Data;Hora;Origem(UF)-Destino;Número;')) {
+                        $l_column_names = array_flip(explode(';', $line));
                     }
 
-                } else if (Str::startsWith($line, 'Tel;Seção;Data;Hora;Origem(UF)-Destino;Número;')) {
-                    $l_column_names = array_flip(explode(';', $line));
-                } else if ($cont > 100) {
-                    throw new Exception('Este arquivo não parece conter dados.');
-                }
+                });
 
-            });
-        }
+            }); // transaction
+        } // for each file
+
+        return $saved;
     }
 
     /**
