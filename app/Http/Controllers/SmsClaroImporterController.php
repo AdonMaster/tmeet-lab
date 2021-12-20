@@ -59,7 +59,7 @@ class SmsClaroImporterController extends Controller
             $saved = $this->processFilesContent($files);
 
             // arquivo processado, vamos marcar no banco isso
-            //todo: $this->repo->arquivosContaAdd($nome_arquivo);
+            $this->repo->arquivosContaAdd($nome_arquivo);
 
             //
             return $this->jsonOk("$saved registros inseridos");
