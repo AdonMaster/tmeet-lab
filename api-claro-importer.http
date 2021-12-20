@@ -1,0 +1,22 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+POST http://localhost/tmeet-lab/api/claro-importer
+X-Requested-With: XMLHttpRequest
+Content-Type: multipart/form-data; boundary="bdcaaaaaaaaddr4"
+
+--bdcaaaaaaaaddr4
+Content-Disposition: form-data; name="arquivos[]"; filename="103341478_109608629_2021_09_13_1.txt"
+
+< D:\Job\TransMeet\Dados para execução da tarefa dos sms\Adonio\SMSs\Arquivos a serem processados\103341478\103341478_109608629_2021_09_13_1.txt
+--bdcaaaaaaaaddr4
+Content-Disposition: form-data; name="arquivos[]"; filename="103341478_109608629_2021_09_13_2.txt"
+
+< D:\Job\TransMeet\Dados para execução da tarefa dos sms\Adonio\SMSs\Arquivos a serem processados\103341478\103341478_109608629_2021_09_13_2.txt
+
+--bdcaaaaaaaaddr4
+
+###
