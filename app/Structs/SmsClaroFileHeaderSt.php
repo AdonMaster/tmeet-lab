@@ -55,7 +55,7 @@ class SmsClaroFileHeaderSt
         $fileIterator = new FileIterator($file);
         $fileIterator->iterate(function($line, $cont) use (&$p_header, &$p_ref_ini, &$p_ref_end) {
 
-            if (++$cont > 20) return false;
+            if ($cont > 20) return false;
             if (Str::startsWith($line, 'Tel;Seção;Data;Hora')) return false;
 
             if (Str::startsWith($line, 'TRANSMEET LT')) {
@@ -74,9 +74,9 @@ class SmsClaroFileHeaderSt
         });
 
         // validation
-        if (!$p_ref_ini || !$p_ref_end || !$p_header) {
-            throw new Exception('Cabeçalho de arquivo inválido');
-        }
+        if ( ! $p_ref_ini) throw new Exception('Cabeçalho de arquivo inválido [data referencia inicial faltando]');
+        if ( ! $p_ref_end) throw new Exception('Cabeçalho de arquivo inválido [data referencia final faltando]');
+        if ( ! $p_header) throw new Exception('Cabeçalho de arquivo inválido [cabeçalho]');
 
         //
         return new SmsClaroFileHeaderSt($p_ref_ini, $p_ref_end);
