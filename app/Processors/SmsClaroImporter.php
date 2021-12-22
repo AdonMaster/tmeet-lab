@@ -106,10 +106,10 @@ class SmsClaroImporter
         $headerModel = $this->processFilesContentHeader($files[0]);
 
         // salvando sms_operadoras
-        $l_column_names = [];
         $saved = 0;
-        DB::transaction(function() use($headerModel, $files, &$l_column_names, &$saved) {
+        DB::transaction(function() use($headerModel, $files, &$saved) {
 
+            $l_column_names = [];
             foreach ($files as $file) {
                 $fileIterator = new FileIterator($file->file);
                 $fileIterator->iterate(function($line, $cont) use ($headerModel, $file, &$l_column_names, &$saved) {
