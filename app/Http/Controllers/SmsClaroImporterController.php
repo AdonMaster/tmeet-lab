@@ -4,19 +4,8 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\ArquivosContaModel;
-use App\Models\SmsOperadorasModel;
 use App\Processors\SmsClaroImporter;
-use App\Repo\SmsClaroRepo;
-use App\Structs\SmsClaroFileHeaderSt;
-use App\Structs\SmsClaroFileSt;
-use App\Utils\FileIterator;
-use App\Utils\Number;
-use Carbon\Carbon;
-use DB;
 use Exception;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Str;
 
 class SmsClaroImporterController extends Controller
 {
