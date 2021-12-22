@@ -108,10 +108,10 @@ class SmsClaroImporter
         // salvando sms_operadoras
         $l_column_names = [];
         $saved = 0;
-        foreach ($files as $file) {
-            $fileIterator = new FileIterator($file->file);
-            DB::transaction(function() use($fileIterator, $headerModel, $file, &$l_column_names, &$saved) {
+        DB::transaction(function() use($headerModel, $files, &$l_column_names, &$saved) {
 
+            foreach ($files as $file) {
+                $fileIterator = new FileIterator($file->file);
                 $fileIterator->iterate(function($line, $cont) use ($headerModel, $file, &$l_column_names, &$saved) {
 
                     if (count($l_column_names) && $line) {
@@ -151,9 +151,9 @@ class SmsClaroImporter
                     }
 
                 });
+            } // for each file
 
-            }); // transaction
-        } // for each file
+        }); // transaction
 
         return $saved;
     }
