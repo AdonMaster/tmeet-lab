@@ -22,6 +22,10 @@ class SmsClaroImporter
      * @var SmsClaroRepo
      */
     private $repo;
+    /**
+     * @var int
+     */
+    private $usuario_id;
 
 
     /**
@@ -34,12 +38,16 @@ class SmsClaroImporter
     }
 
     /**
+     * @param int $usuario_id
      * @param UploadedFile[] $files
      * @return string
      * @throws Throwable
      */
-    public function import(array $files)
+    public function import($usuario_id, array $files)
     {
+        //
+        $this->usuario_id = $usuario_id;
+
         // aki processo o nome dos arquivos e valido se estão em ordem
         $files = $this->processFilesSt($files);
 
@@ -157,14 +165,13 @@ class SmsClaroImporter
      */
     private function processFilesContentHeader(SmsClaroFileSt $file)
     {
-        $USUARIO_ID = 1;
         $headerFile = $file->file;
         $headerSt = SmsClaroFileHeaderSt::extract($headerFile);
 
         $conta = $file->id2;
         $data_inicio = $headerSt->ref_dt_ini;
         $data_fim = $headerSt->ref_dt_end;
-        $usuario_upload = $USUARIO_ID;
+        $usuario_upload = $this->usuario_id;
         $nome_arquivo = $file->filename_raw;
 
         return $this->repo->contasClaroAdd($conta, $data_inicio, $data_fim, $usuario_upload, $nome_arquivo);

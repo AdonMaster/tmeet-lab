@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 
 
 use App\Processors\SmsClaroImporter;
-use Exception;
+use Throwable;
 
 class SmsClaroImporterController extends Controller
 {
@@ -22,11 +22,12 @@ class SmsClaroImporterController extends Controller
         //
         try {
 
-            $msg = $importer->import($files);
+            $USUARIO_ID_DE_EXEMPLO = 1; // <----- aki supostamente pegaria o usuario da sessão
+            $msg = $importer->import($USUARIO_ID_DE_EXEMPLO, $files);
 
             return $this->jsonOk($msg);
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return $this->jsonError($e->getMessage());
         }
     }
