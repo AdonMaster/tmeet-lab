@@ -58,12 +58,11 @@ class SmsClaroFileHeaderSt
             if ($cont > 20) return false;
             if (Str::startsWith($line, 'Tel;Seção;Data;Hora')) return false;
 
-            if (Str::startsWith($line, 'TRANSMEET LT')) {
-                $p_header = true;
-            }
+            //
+            if (Str::startsWith($line, 'TRANSMEET LT')) $p_header = true;
 
             // periodo referencia
-            if (Str::startsWith($line, 'Período de Referência: ')) {
+            elseif (Str::startsWith($line, 'Período de Referência: ')) {
                 $matches = [];
                 preg_match('/.+: (\d{2}\/\d{2}\/\d{4}) a (\d{2}\/\d{2}\/\d{4})/', $line, $matches);
                 $p_ref_ini = Carbon::createFromFormat('d/m/Y', $matches[1])->startOfDay();
